@@ -1,12 +1,12 @@
+# Democracy Assist
 
+An interactive web app that helps users understand the election process step-by-step.
 
-## Run Locally
+## Features
+- Guided election flow
+- Timeline visualization
+- Simple explanations
+- Interactive assistant
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Live Demo
+https://democracyassist-116131421655.asia-southeast1.run.app/
