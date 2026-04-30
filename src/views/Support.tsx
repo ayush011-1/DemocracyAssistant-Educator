@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Bot, 
@@ -15,30 +15,85 @@ import {
   Calendar,
   Contact2,
   ChevronDown,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
+import { useUI } from '../context/UIContext';
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
 export default function Support() {
+  const { isSimplifiedMode } = useUI();
   const [messages, setMessages] = useState([
     { 
       id: 1, 
       type: 'bot', 
       text: "Hello! I'm the DemocracyAssist AI. I can help you with voter registration, polling locations, ballot tracking, and using the dashboard. How can I assist you today?" 
-    },
-    { 
-      id: 2, 
-      type: 'user', 
-      text: "How do I register?" 
-    },
-    { 
-      id: 3, 
-      type: 'bot', 
-      isSimplified: true,
-      text: "Registering is easy. You can do it online or in person.\n\n1. Check if you are eligible (usually 18+ and a citizen).\n2. Gather your ID.\n3. Fill out the form on our official portal." 
     }
   ]);
 
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isLoading]);
+
+  const handleSend = async (text: string = input) => {
+    if (!text.trim() || isLoading) return;
+
+    const userMessage = { id: Date.now(), type: 'user', text };
+    setMessages(prev => [...prev, userMessage]);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [
+          { role: 'user', parts: [{ text: text }] }
+        ],
+        config: {
+          systemInstruction: `
+            You are DemocracyAssist AI, a helpful companion for the 2024 Election Cycle.
+            Your goal is to provide clear, reliable, and accessible information about:
+            - Voter registration (eligibility, methods, IDs)
+            - Election timelines and deadlines
+            - Nomination processes
+            - Campaigning rules
+            - Voting methods (absentee, early, day-of)
+            - Counting and results transparency
+
+            ${isSimplifiedMode ? 'The user is in "Focus Mode". Provide EXTREMELY simplified, easy-to-read, and encouraging responses. Use 3rd grade vocabulary level. Bold key terms.' : 'Provide professional, authoritative, and detailed responses.'}
+
+            Keep responses concise. If you don't know something about a specific local law, direct them to verify with their local board of elections.
+          `
+        }
+      });
+
+      const botMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        text: response.text || "I'm sorry, I couldn't process that request.",
+        isSimplified: isSimplifiedMode
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error("AI Error:", error);
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        type: 'bot',
+        text: "I'm having trouble connecting to my knowledge base. Please try again in a moment."
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="w-full flex flex-col gap-12">
@@ -67,11 +122,16 @@ export default function Support() {
                 </div>
               </div>
             </div>
+            {isSimplifiedMode && (
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-accent-green/30 py-2 px-4 rounded-xl border-2 border-black">
+                <ShieldCheck className="w-4 h-4" /> Focus Mode Active
+              </div>
+            )}
           </div>
 
           {/* Chat Canvas */}
-          <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-8 bg-slate-50 no-scrollbar">
-            {messages.map((msg) => (
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 flex flex-col gap-8 bg-slate-50 no-scrollbar scroll-smooth">
+            {messages.map((msg: any) => (
               <div key={msg.id} className={`flex gap-4 max-w-[90%] ${msg.type === 'user' ? 'self-end flex-row-reverse' : ''}`}>
                 <div className={`w-10 h-10 rounded-xl border-2 border-black flex items-center justify-center shrink-0 mt-1 shadow-bento ${msg.type === 'bot' ? 'bg-accent-green' : 'bg-accent-purple'}`}>
                   {msg.type === 'bot' ? <Bot className="w-6 h-6 text-black" /> : <User className="w-6 h-6 text-black" />}
@@ -90,41 +150,51 @@ export default function Support() {
                         Simplified Interface
                       </div>
                     )}
-                    <div className="whitespace-pre-line">{msg.text}</div>
-                    {msg.isSimplified && (
-                      <div className="mt-6 pt-6 border-t-2 border-black/10 flex flex-col gap-3">
-                        <button className="text-black hover:underline flex items-center gap-2 text-xs font-black uppercase tracking-widest">
-                          Registration Portal <ArrowRight className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
+                    <div className="whitespace-pre-line prose prose-sm max-w-none prose-p:my-0">{msg.text}</div>
                   </div>
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="flex gap-4 max-w-[90%]">
+                <div className="w-10 h-10 rounded-xl border-2 border-black bg-accent-green flex items-center justify-center shrink-0 mt-1 shadow-bento">
+                  <Bot className="w-6 h-6 text-black" />
+                </div>
+                <div className="p-6 bento-card bg-white text-black flex items-center gap-3">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-xs font-black uppercase tracking-widest">Assistant is thinking...</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Input Area */}
-          <div className="p-6 border-t-2 border-black bg-white">
+          <form 
+            onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+            className="p-6 border-t-2 border-black bg-white"
+          >
             <div className="relative flex items-center">
               <input 
-                className="w-full bg-slate-100 border-2 border-black rounded-2xl pl-6 pr-16 py-4 text-sm font-bold focus:outline-none focus:ring-0 transition-all"
+                className="w-full bg-slate-100 border-2 border-black rounded-2xl pl-6 pr-16 py-4 text-sm font-bold focus:outline-none focus:ring-0 transition-all focus:bg-white"
                 placeholder="Type your question here..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                disabled={isLoading}
               />
               <button 
-                className="absolute right-2 bg-black text-white p-3 rounded-xl hover:scale-95 transition-transform"
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="absolute right-2 bg-black text-white p-3 rounded-xl hover:scale-95 transition-transform disabled:opacity-50 disabled:hover:scale-100"
               >
                 <Send className="w-5 h-5" />
               </button>
             </div>
             <div className="flex gap-2 mt-6 overflow-x-auto no-scrollbar pb-1">
-              <Chip label="Verify ballot" />
-              <Chip label="Reset password" />
-              <Chip label="Export list" />
+              <Chip label="How to register?" onClick={() => handleSend("How do I register to vote?")} />
+              <Chip label="Voting deadlines" onClick={() => handleSend("What are the important election deadlines?")} />
+              <Chip label="Security info" onClick={() => handleSend("Tell me about voting security and machine safety.")} />
             </div>
-          </div>
+          </form>
         </section>
 
         {/* FAQ Column */}
@@ -178,9 +248,12 @@ export default function Support() {
   );
 }
 
-function Chip({ label }: { label: string }) {
+function Chip({ label, onClick }: { label: string, onClick?: () => void }) {
   return (
-    <button className="text-[10px] bento-button px-4 py-2 shadow-none hover:shadow-none hover:bg-slate-800">
+    <button 
+      onClick={onClick}
+      className="text-[10px] bento-button px-4 py-2 shadow-none hover:shadow-none hover:bg-slate-800"
+    >
       {label}
     </button>
   );

@@ -28,11 +28,13 @@ import Registration from './views/Registration';
 import Support from './views/Support';
 
 import { useAuth } from './context/AuthContext';
+import { useUI } from './context/UIContext';
 import AuthModal from './components/AuthModal';
 
 export default function App() {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { isSimplifiedMode, setIsSimplifiedMode } = useUI();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
@@ -183,6 +185,15 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <button 
+              onClick={() => setIsSimplifiedMode(!isSimplifiedMode)}
+              className={`hidden sm:flex items-center gap-2 px-4 py-3 border-2 border-black rounded-xl transition-all shadow-bento active:translate-y-[1px] active:shadow-none ${isSimplifiedMode ? 'bg-accent-green' : 'bg-slate-50'}`}
+            >
+              <div className={`w-8 h-4 rounded-full border-2 border-black relative transition-colors ${isSimplifiedMode ? 'bg-black' : 'bg-white'}`}>
+                <div className={`absolute top-0.5 w-2 h-2 rounded-full border-2 border-black transition-all ${isSimplifiedMode ? 'left-[18px] bg-accent-green' : 'left-0.5 bg-black'}`}></div>
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest">{isSimplifiedMode ? 'Focus On' : 'Standard'}</span>
+            </button>
             <button className="hidden sm:block p-3 bg-slate-50 border-2 border-black rounded-xl hover:bg-slate-100 transition-colors shadow-bento active:translate-y-[2px] active:translate-x-[2px] active:shadow-none">
               <Settings className="w-5 h-5" />
             </button>

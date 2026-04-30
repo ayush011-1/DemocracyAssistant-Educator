@@ -12,12 +12,13 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useUI } from '../context/UIContext';
 import Comments from '../components/Comments';
 
 export default function Registration() {
   const navigate = useNavigate();
+  const { isSimplifiedMode, setIsSimplifiedMode } = useUI();
   const [step, setStep] = useState(1);
-  const [isSimplified, setIsSimplified] = useState(true);
 
   return (
     <div className="w-full">
@@ -57,18 +58,18 @@ export default function Registration() {
           <div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8">
               <h1 className="text-4xl font-black italic tracking-tighter">
-                Registration Guide
+                {isSimplifiedMode ? 'Getting Ready' : 'Registration Guide'}
               </h1>
               
               {/* Simplified Toggle */}
               <div className="flex items-center gap-4 bg-white bento-card px-4 py-2 shadow-bento">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Kid Mode</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Focus Mode</span>
                 <button 
-                  onClick={() => setIsSimplified(!isSimplified)}
-                  className={`w-12 h-7 rounded-full relative transition-all duration-300 border-2 border-black ${isSimplified ? 'bg-secondary' : 'bg-slate-200'}`}
+                  onClick={() => setIsSimplifiedMode(!isSimplifiedMode)}
+                  className={`w-12 h-7 rounded-full relative transition-all duration-300 border-2 border-black ${isSimplifiedMode ? 'bg-secondary' : 'bg-slate-200'}`}
                 >
                   <motion.div 
-                    animate={{ x: isSimplified ? 22 : 2 }}
+                    animate={{ x: isSimplifiedMode ? 22 : 2 }}
                     className="absolute top-0.5 left-0.5 w-5 h-5 bg-white border-2 border-black rounded-full"
                   />
                 </button>
@@ -77,33 +78,43 @@ export default function Registration() {
 
             <AnimatePresence mode="wait">
               <motion.div 
-                key={step}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                key={`${step}-${isSimplifiedMode}`}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
                 className="bento-card-lg bg-white overflow-hidden mb-12"
               >
                 <div className="h-4 bg-secondary w-full border-b-2 border-black"></div>
                 <div className="p-10">
                   {step === 1 ? (
                     <>
-                      <h2 className="text-3xl font-black italic mb-6">Eligibility Requirements</h2>
+                      <h2 className="text-3xl font-black italic mb-6">
+                        {isSimplifiedMode ? 'Can I Vote?' : 'Eligibility Requirements'}
+                      </h2>
                       <p className="text-lg text-on-surface-variant leading-relaxed mb-10 font-medium">
-                        To register to vote, you must meet a few basic requirements to ensure you are eligible to participate in the upcoming election.
+                        {isSimplifiedMode 
+                          ? "Before we start, let's see if you can join the big day! It's easy to check."
+                          : "To register to vote, you must meet a few basic requirements to ensure you are eligible to participate in the upcoming election."}
                       </p>
 
                       <div className="space-y-6">
                         <RequirementItem 
-                          title="Citizenship"
-                          description="You must be a citizen of the country. If you were born here or have completed the naturalization process, you meet this requirement."
+                          title={isSimplifiedMode ? "1. Your Country" : "Citizenship"}
+                          description={isSimplifiedMode 
+                            ? "You were born here or you became a part of our country through special rules." 
+                            : "You must be a citizen of the country. If you were born here or have completed the naturalization process, you meet this requirement."}
                         />
                         <RequirementItem 
-                          title="Age"
-                          description="You must be at least 18 years old on or before Election Day."
+                          title={isSimplifiedMode ? "2. Your Birthday" : "Age"}
+                          description={isSimplifiedMode 
+                            ? "You must be 18 years old by the time the voting starts!" 
+                            : "You must be at least 18 years old on or before Election Day."}
                         />
                         <RequirementItem 
-                          title="Residence Requirements"
-                          description="You must live in the state or district where you are registering to vote."
+                          title={isSimplifiedMode ? "3. Your Home" : "Residence Requirements"}
+                          description={isSimplifiedMode 
+                            ? "You must live in the neighborhood where you want to vote."
+                            : "You must live in the state or district where you are registering to vote."}
                           hasTooltip
                         />
                       </div>
