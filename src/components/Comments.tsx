@@ -108,6 +108,14 @@ export default function Comments({ sectionId }: { sectionId: string }) {
             Sign In with Google
           </button>
         </div>
+      ) : !user.emailVerified ? (
+        <div className="bento-card bg-accent-yellow/30 p-8 text-center border-dashed">
+          <p className="text-sm font-bold mb-2">Email Verification Required</p>
+          <p className="text-xs text-slate-500 mb-4">Please verify your email address to join the conversation and prevent community spam.</p>
+          <button disabled className="bento-button-outline opacity-50 cursor-not-allowed">
+            Account Not Verified
+          </button>
+        </div>
       ) : (
         <form onSubmit={handleSubmit} className="relative flex flex-col gap-3">
           {replyTo && (

@@ -17,6 +17,32 @@
   --shadow-bento-lg: 8px 8px 0px 0px rgba(0,0,0,1);
 }
 
+/* Accessibility Enhancement Classes */
+.accessibility-enhanced {
+  font-size: 1.125rem; /* Larger base font size */
+  line-height: 1.75;
+}
+
+.accessibility-enhanced h1 {
+  font-size: 3rem !important;
+  letter-spacing: -0.02em;
+}
+
+.accessibility-enhanced .bento-card,
+.accessibility-enhanced .bento-card-lg {
+  border-width: 3px !important;
+}
+
+.accessibility-enhanced button {
+  min-height: 48px;
+  @apply !px-8;
+}
+
+.simplified-mode .prose {
+  max-width: 65ch;
+  @apply text-lg;
+}
+
 @layer base {
   body {
     @apply bg-surface text-on-surface antialiased font-sans;

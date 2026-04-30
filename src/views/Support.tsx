@@ -58,6 +58,7 @@ export default function Support() {
           { role: 'user', parts: [{ text: text }] }
         ],
         config: {
+          tools: [{ googleSearch: {} }],
           systemInstruction: `
             You are DemocracyAssist AI, a helpful companion for the 2024 Election Cycle.
             Your goal is to provide clear, reliable, and accessible information about:

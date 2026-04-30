@@ -10,6 +10,7 @@ import {
   Settings, 
   Globe, 
   Bell, 
+  MapPin,
   UserCircle2,
   ChevronRight,
   ArrowRight,
@@ -25,6 +26,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Onboarding from './views/Onboarding';
 import Timeline from './views/Timeline';
 import Registration from './views/Registration';
+import PollingLocations from './views/PollingLocations';
 import Support from './views/Support';
 
 import { useAuth } from './context/AuthContext';
@@ -34,7 +36,7 @@ import AuthModal from './components/AuthModal';
 export default function App() {
   const location = useLocation();
   const { user, logout } = useAuth();
-  const { isSimplifiedMode, setIsSimplifiedMode } = useUI();
+  const { isSimplifiedMode, setIsSimplifiedMode, isHighAccessibility, setIsHighAccessibility } = useUI();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
@@ -115,6 +117,7 @@ export default function App() {
               <SidebarLink to="/nomination" icon={Users} label="Nomination" active={location.pathname === '/nomination'} />
               <SidebarLink to="/campaign" icon={TrendingUp} label="Campaign" active={location.pathname === '/campaign'} />
               <SidebarLink to="/voting" icon={BarChart3} label="Voting" active={location.pathname === '/voting'} />
+              <SidebarLink to="/polling" icon={MapPin} label="Polling Stations" active={location.pathname === '/polling'} />
               <SidebarLink to="/counting" icon={LayoutDashboard} label="Counting" active={location.pathname === '/counting'} />
             </div>
 
@@ -194,6 +197,17 @@ export default function App() {
               </div>
               <span className="text-[10px] font-black uppercase tracking-widest">{isSimplifiedMode ? 'Focus On' : 'Standard'}</span>
             </button>
+            <button 
+              onClick={() => setIsHighAccessibility(!isHighAccessibility)}
+              className={`hidden sm:flex items-center gap-2 px-4 py-3 border-2 border-black rounded-xl transition-all shadow-bento active:translate-y-[1px] active:shadow-none ${isHighAccessibility ? 'bg-accent-yellow' : 'bg-slate-50'}`}
+              title="Toggle High Accessibility Mode"
+              aria-pressed={isHighAccessibility}
+            >
+              <div className={`w-8 h-4 rounded-full border-2 border-black relative transition-colors ${isHighAccessibility ? 'bg-black' : 'bg-white'}`}>
+                <div className={`absolute top-0.5 w-2 h-2 rounded-full border-2 border-black transition-all ${isHighAccessibility ? 'left-[18px] bg-accent-yellow' : 'left-0.5 bg-black'}`}></div>
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest">{isHighAccessibility ? 'Enhanced' : 'Standard UI'}</span>
+            </button>
             <button className="hidden sm:block p-3 bg-slate-50 border-2 border-black rounded-xl hover:bg-slate-100 transition-colors shadow-bento active:translate-y-[2px] active:translate-x-[2px] active:shadow-none">
               <Settings className="w-5 h-5" />
             </button>
@@ -231,6 +245,7 @@ export default function App() {
                 <Route path="/" element={<Onboarding />} />
                 <Route path="/timeline" element={<Timeline />} />
                 <Route path="/registration" element={<Registration />} />
+                <Route path="/polling" element={<PollingLocations />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="*" element={<Onboarding />} />
               </Routes>

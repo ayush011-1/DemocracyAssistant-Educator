@@ -55,9 +55,10 @@ service cloud.firestore {
 
     // Collection Rules
     match /comments/{commentId} {
-      allow read: if isSignedIn(); // Users can see all comments
-      allow create: if isSignedIn() && isValidComment(incoming());
+      allow read: if isSignedIn(); 
+      allow create: if isSignedIn() && isEmailVerified() && isValidId(commentId) && isValidComment(incoming());
       allow update: if isOwner(existing().authorId) && 
+                      isEmailVerified() &&
                       isValidComment(incoming()) && 
                       incoming().authorId == existing().authorId &&
                       incoming().createdAt == existing().createdAt &&
@@ -67,7 +68,7 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidUserProfile(incoming());
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming());
       allow update: if isOwner(userId) && 
                       isValidUserProfile(incoming()) && 
                       incoming().createdAt == existing().createdAt &&
