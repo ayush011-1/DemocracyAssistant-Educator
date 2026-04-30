@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   Vote, 
@@ -51,7 +51,8 @@ export default function App() {
   if (isLanding) {
     return (
       <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-4 sm:p-8">
-        <div className="bento-card-lg bg-white p-6 sm:p-12 max-w-2xl w-full text-center relative overflow-hidden">
+        <header role="banner" className="sr-only"><h1>DemocracyAssist Onboarding</h1></header>
+        <main role="main" className="bento-card-lg bg-white p-6 sm:p-12 max-w-2xl w-full text-center relative overflow-hidden">
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
           <div className="relative z-10">
             <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-bento">
@@ -76,17 +77,27 @@ export default function App() {
               )}
             </div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
 
   return (
     <div className="p-2 sm:p-4 bg-surface min-h-screen flex gap-4 h-screen overflow-hidden">
+      {/* Skip to Content for Accessibility */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only fixed top-4 left-4 z-[100] bg-black text-white px-6 py-3 rounded-xl shadow-bento border-2 border-white"
+      >
+        Skip to main content
+      </a>
+
       {/* Sidebar Navigation */}
       <AnimatePresence>
         {(isSidebarOpen || window.innerWidth >= 1024) && (
           <motion.nav 
+            role="navigation"
+            aria-label="Main Navigation"
             initial={window.innerWidth < 1024 ? { x: -300 } : {}}
             animate={{ x: 0 }}
             exit={{ x: -300 }}
@@ -153,7 +164,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* Top Header Card */}
-        <header className="h-20 bento-card bg-white p-2 sm:p-4 flex justify-between items-center shrink-0">
+        <header role="banner" className="h-20 bento-card bg-white p-2 sm:p-4 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-2 sm:gap-4">
             <button 
               onClick={() => setIsSidebarOpen(true)}
@@ -190,7 +201,8 @@ export default function App() {
           <div className="flex items-center gap-2 sm:gap-3">
             <button 
               onClick={() => setIsSimplifiedMode(!isSimplifiedMode)}
-              className={`hidden sm:flex items-center gap-2 px-4 py-3 border-2 border-black rounded-xl transition-all shadow-bento active:translate-y-[1px] active:shadow-none ${isSimplifiedMode ? 'bg-accent-green' : 'bg-slate-50'}`}
+              className={`hidden sm:flex items-center gap-2 px-4 py-3 border-2 border-black rounded-xl transition-all shadow-bento active:translate-y-[1px] active:shadow-none focus:ring-4 focus:ring-accent-purple/50 outline-none ${isSimplifiedMode ? 'bg-accent-green' : 'bg-slate-50'}`}
+              aria-label={`Toggle Focus Mode: ${isSimplifiedMode ? 'Currently On' : 'Currently Off'}`}
             >
               <div className={`w-8 h-4 rounded-full border-2 border-black relative transition-colors ${isSimplifiedMode ? 'bg-black' : 'bg-white'}`}>
                 <div className={`absolute top-0.5 w-2 h-2 rounded-full border-2 border-black transition-all ${isSimplifiedMode ? 'left-[18px] bg-accent-green' : 'left-0.5 bg-black'}`}></div>
@@ -235,6 +247,8 @@ export default function App() {
         <div className="flex-1 bg-white bento-card-lg overflow-y-auto no-scrollbar p-4 sm:p-8 relative">
           <AnimatePresence mode="wait">
             <motion.div
+              id="main-content"
+              role="main"
               key={location.pathname}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -257,7 +271,7 @@ export default function App() {
   );
 }
 
-function SidebarLink({ to, icon: Icon, label, active = false }: { to: string, icon: any, label: string, active?: boolean }) {
+const SidebarLink = memo(({ to, icon: Icon, label, active = false }: { to: string, icon: any, label: string, active?: boolean }) => {
   return (
     <Link 
       to={to} 
@@ -271,7 +285,9 @@ function SidebarLink({ to, icon: Icon, label, active = false }: { to: string, ic
       <span className="text-xs font-bold uppercase tracking-widest leading-none">{label}</span>
     </Link>
   );
-}
+});
+
+SidebarLink.displayName = 'SidebarLink';
 
 function Footer() {
   return (

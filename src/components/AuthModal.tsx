@@ -53,15 +53,22 @@ export default function AuthModal({ isOpen, onClose }: { isOpen: boolean, onClos
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="auth-title"
             className="w-full max-w-md bg-white bento-card-lg p-8 relative z-10"
           >
             <div className="h-4 bg-accent-yellow -mt-8 -mx-8 mb-8 border-b-2 border-black rounded-t-[30px]"></div>
             
-            <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-xl transition-colors">
+            <button 
+              onClick={onClose} 
+              aria-label="Close modal"
+              className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-xl transition-colors focus:ring-2 focus:ring-black outline-none"
+            >
               <X className="w-6 h-6" />
             </button>
 
-            <h2 className="text-4xl font-black italic mb-2">{isSignUp ? 'Join Us' : 'Welcome Back'}</h2>
+            <h2 id="auth-title" className="text-4xl font-black italic mb-2">{isSignUp ? 'Join Us' : 'Welcome Back'}</h2>
             <p className="text-sm font-medium text-slate-500 mb-8">
               {isSignUp ? 'Create your profile to join the conversation.' : 'Sign in to access your voter dashboard.'}
             </p>

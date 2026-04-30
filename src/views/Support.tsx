@@ -21,7 +21,18 @@ import {
 import { GoogleGenAI } from "@google/genai";
 import { useUI } from '../context/UIContext';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+let aiInstance: GoogleGenAI | null = null;
+const getAI = () => {
+  if (!aiInstance) {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      console.warn("GEMINI_API_KEY is missing. AI features will be limited.");
+      return null;
+    }
+    aiInstance = new GoogleGenAI({ apiKey: key });
+  }
+  return aiInstance;
+};
 
 export default function Support() {
   const { isSimplifiedMode } = useUI();
@@ -52,6 +63,9 @@ export default function Support() {
     setIsLoading(true);
 
     try {
+      const ai = getAI();
+      if (!ai) throw new Error("AI not configured");
+      
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: [
